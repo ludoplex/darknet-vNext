@@ -13,8 +13,7 @@ def array_to_image(arr):
     w = arr.shape[2]
     arr = (arr/255.0).flatten()
     data = dn.c_array(dn.c_float, arr)
-    im = dn.IMAGE(w,h,c,data)
-    return im
+    return dn.IMAGE(w,h,c,data)
 
 def detect2(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
     boxes = dn.make_boxes(net)
@@ -23,12 +22,17 @@ def detect2(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
     dn.network_detect(net, image, thresh, hier_thresh, nms, boxes, probs)
     res = []
     for j in range(num):
-        for i in range(meta.classes):
-            if probs[j][i] > 0:
-                res.append((meta.names[i], probs[j][i], (boxes[j].x, boxes[j].y, boxes[j].w, boxes[j].h)))
-    res = sorted(res, key=lambda x: -x[1])
+        res.extend(
+            (
+                meta.names[i],
+                probs[j][i],
+                (boxes[j].x, boxes[j].y, boxes[j].w, boxes[j].h),
+            )
+            for i in range(meta.classes)
+            if probs[j][i] > 0
+        )
     dn.free_ptrs(dn.cast(probs, dn.POINTER(dn.c_void_p)), num)
-    return res
+    return sorted(res, key=lambda x: -x[1])
 
 import sys, os
 sys.path.append(os.path.join(os.getcwd(),'python/'))

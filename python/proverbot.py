@@ -26,11 +26,10 @@ def predict_tactic(net, s):
 
 def predict_tactics(net, s, n):
     tacs = []
-    for i in range(n):
+    for _ in range(n):
         reset_rnn(net)
         tacs.append(predict_tactic(net, s))
-    tacs = sorted(tacs, key=lambda x: -x[1])
-    return tacs
+    return sorted(tacs, key=lambda x: -x[1])
 
 net = load_net("cfg/coq.test.cfg", "/home/pjreddie/backup/coq.backup", 0)
 t = predict_tactics(net, "+++++\n", 10)

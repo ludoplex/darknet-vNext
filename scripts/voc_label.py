@@ -23,8 +23,8 @@ def convert(size, box):
     return (x,y,w,h)
 
 def convert_annotation(year, image_id):
-    in_file = open('VOCdevkit/VOC%s/Annotations/%s.xml'%(year, image_id))
-    out_file = open('VOCdevkit/VOC%s/labels/%s.txt'%(year, image_id), 'w')
+    in_file = open(f'VOCdevkit/VOC{year}/Annotations/{image_id}.xml')
+    out_file = open(f'VOCdevkit/VOC{year}/labels/{image_id}.txt', 'w')
     tree=ET.parse(in_file)
     root = tree.getroot()
     size = root.find('size')
@@ -40,20 +40,23 @@ def convert_annotation(year, image_id):
         xmlbox = obj.find('bndbox')
         b = (float(xmlbox.find('xmin').text), float(xmlbox.find('xmax').text), float(xmlbox.find('ymin').text), float(xmlbox.find('ymax').text))
         bb = convert((w,h), b)
-        out_file.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
+        out_file.write(f"{str(cls_id)} " + " ".join([str(a) for a in bb]) + '\n')
 
 wd = getcwd()
 
 for year, image_set in sets:
-    if not os.path.exists('VOCdevkit/VOC%s/labels/'%(year)):
-        os.makedirs('VOCdevkit/VOC%s/labels/'%(year))
-    image_ids = open('VOCdevkit/VOC%s/ImageSets/Main/%s.txt'%(year, image_set)).read().strip().split()
-    list_file = open('%s_%s.txt'%(year, image_set), 'w')
-    for image_id in image_ids:
-        list_file.write('%s/VOCdevkit/VOC%s/JPEGImages/%s.jpg\n'%(wd, year, image_id))
-        convert_annotation(year, image_id)
-    list_file.close()
-
+    if not os.path.exists(f'VOCdevkit/VOC{year}/labels/'):
+        os.makedirs(f'VOCdevkit/VOC{year}/labels/')
+    image_ids = (
+        open(f'VOCdevkit/VOC{year}/ImageSets/Main/{image_set}.txt')
+        .read()
+        .strip()
+        .split()
+    )
+    with open(f'{year}_{image_set}.txt', 'w') as list_file:
+        for image_id in image_ids:
+            list_file.write('%s/VOCdevkit/VOC%s/JPEGImages/%s.jpg\n'%(wd, year, image_id))
+            convert_annotation(year, image_id)
 os.system("cat 2007_train.txt 2007_val.txt 2012_train.txt 2012_val.txt > train.txt")
 os.system("cat 2007_train.txt 2007_val.txt 2007_test.txt 2012_train.txt 2012_val.txt > train.all.txt")
 

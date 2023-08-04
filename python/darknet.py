@@ -116,11 +116,8 @@ predict_image.restype = POINTER(c_float)
 
 def classify(net, meta, im):
     out = predict_image(net, im)
-    res = []
-    for i in range(meta.classes):
-        res.append((meta.names[i], out[i]))
-    res = sorted(res, key=lambda x: -x[1])
-    return res
+    res = [(meta.names[i], out[i]) for i in range(meta.classes)]
+    return sorted(res, key=lambda x: -x[1])
 
 def detect(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
     im = load_image(image, 0, 0)
